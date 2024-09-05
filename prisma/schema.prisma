@@ -22,8 +22,26 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  Availability Availability[]
+}
+
+model Availability {
+  id     String            @id @default(auto()) @map("_id") @db.ObjectId
+  user   User              @relation(fields: [userId], references: [id])
+  userId String            @db.ObjectId
+  days   DayAvailability[]
+}
+
+model DayAvailability {
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  day            String // "Sunday", "Monday", etc.
+  enabled        Boolean
+  Availability   Availability? @relation(fields: [availabilityId], references: [id])
+  availabilityId String?       @db.ObjectId
+  from           String // Time in "HH:MM" format
+  to             String // Time in "HH:MM" format
 }
 
 model Account {

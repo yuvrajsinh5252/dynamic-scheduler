@@ -1,18 +1,21 @@
-"use client"
+"use server"
 
-import { Calendar } from "@/components/ui/calendar"
 import React from "react"
+import { getUserRole } from "../actions"
+import { auth } from "@/lib/auth"
+import UserDashboard from "@/components/user/user-dashboard"
+import AdminDashboard from "@/components/admin/admin-dashboard"
 
 
-export default function Page() {
-  const [date, setDate] = React.useState<Date | undefined>(new Date())
+export default async function Page() {
+  const session = await auth()
+  const role = getUserRole(session?.user?.id ?? "")
 
   return (
-    <Calendar
-      mode="single"
-      selected={date}
-      onSelect={setDate}
-      className="rounded-md border"
-    />
+    <div>
+      {
+        await role === "USER" ? <UserDashboard /> : <AdminDashboard />
+      }
+    </div>
   )
 }
