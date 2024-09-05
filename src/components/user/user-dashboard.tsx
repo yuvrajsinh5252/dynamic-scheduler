@@ -5,7 +5,7 @@ import React from "react"
 import UserSession from "../user/session"
 import UserAvailability from "./availability"
 
-export default function AdminDashboard() {
+export default function UserDashboard() {
   return (
     <div className="flex justify-center items-center p-2 h-screen">
       <Tabs defaultValue="Availability" className="justify-center items-center flex flex-col">

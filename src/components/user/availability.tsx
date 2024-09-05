@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import AvailabilityPicker from "./availability-picker"
-import { use, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { createUserAvailability, getUserAvailability } from "@/app/actions"
 import { useSession } from "next-auth/react"
 import { Availability } from "@prisma/client"
@@ -32,6 +32,7 @@ export default function UserAvailability() {
   const [availability, setAvailability] = useState<Record<string, DayAvailability>>(
     daysOfWeek.reduce((acc, day) => {
       acc[day] = {
+        day,
         enabled: false,
         from: "09:00", to: "17:00",
       };
@@ -48,8 +49,6 @@ export default function UserAvailability() {
     }
     func();
   }, [session.data?.user?.id]);
-
-  console.log(data);
 
   return (
     <div className="h-full rounded-lg shadow-lg border-2 p-4">
@@ -100,7 +99,7 @@ export default function UserAvailability() {
       <div className="flex-col gap-4 rounded-lg p-4 flex">
         {
           data.length > 0 ? data.map((item, index) => (
-            <Card key={index} title="kasdfsdf" time="dsfasf" />
+            <Card key={index} title={item.name} time={item.days} id={session.data?.user?.id ?? " "} />
           )) : <div>No data</div>
         }
       </div >

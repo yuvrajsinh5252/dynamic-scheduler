@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
-import { Event, Role } from "@prisma/client";
+import { Role } from "@prisma/client";
 
 export async function setUserRole(userId: string, role: Role) {
   return await prisma.user.update({
@@ -29,12 +29,23 @@ export const createUserAvailability = async (
       to,
     })
   );
+
   const data = {
+    name: "default name",
     userId,
     days: newAvailability,
   };
   return await prisma.availability.create({
     data,
+  });
+};
+
+export const DeleteUserAvailability = async (userId: string, name: string) => {
+  return await prisma.availability.delete({
+    where: {
+      id: userId,
+      name,
+    },
   });
 };
 
@@ -76,4 +87,8 @@ export const getUserEvents = async (userId: string) => {
     where: { EventUser: { some: { userId } } },
     include: { EventUser: true },
   });
+};
+
+export const getAllUsers = async () => {
+  return await prisma.user.findMany();
 };
