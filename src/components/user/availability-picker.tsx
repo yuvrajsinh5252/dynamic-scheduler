@@ -1,31 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { Input } from "../ui/input";
 
-type TimeRange = {
-  from: string;
-  to: string;
-};
-
-type DayAvailability = {
-  enabled: boolean;
-  timeRanges: TimeRange[];
-};
-
-const AvailabilityPicker: React.FC = () => {
+const AvailabilityPicker = ({
+  setAvailability,
+  availability,
+}: {
+  setAvailability: React.Dispatch<React.SetStateAction<Record<string, DayAvailability>>>;
+  availability: Record<string, DayAvailability>;
+}) => {
   const daysOfWeek: string[] = [
     "Sunday", "Monday", "Tuesday", "Wednesday",
     "Thursday", "Friday", "Saturday"
   ];
-
-  const [availability, setAvailability] = useState<Record<string, DayAvailability>>(
-    daysOfWeek.reduce((acc, day) => {
-      acc[day] = {
-        enabled: false,
-        timeRanges: [{ from: "09:00", to: "17:00" }],
-      };
-      return acc;
-    }, {} as Record<string, DayAvailability>)
-  );
 
   const toggleDay = (day: string) => {
     setAvailability((prevAvailability) => ({
@@ -35,26 +21,6 @@ const AvailabilityPicker: React.FC = () => {
         enabled: !prevAvailability[day].enabled,
       },
     }));
-  };
-
-  const handleTimeChange = (
-    day: string,
-    index: number,
-    field: keyof TimeRange,
-    value: string
-  ) => {
-    setAvailability((prevAvailability) => {
-      const newTimeRanges = [...prevAvailability[day].timeRanges];
-      newTimeRanges[index] = { ...newTimeRanges[index], [field]: value };
-
-      return {
-        ...prevAvailability,
-        [day]: {
-          ...prevAvailability[day],
-          timeRanges: newTimeRanges,
-        },
-      };
-    });
   };
 
   return (
@@ -70,26 +36,37 @@ const AvailabilityPicker: React.FC = () => {
             />
             <span className="capitalize">{day}</span>
           </label>
-          {availability[day].enabled &&
-            availability[day].timeRanges.map((range, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <Input
-                  type="time"
-                  value={range.from}
-                  onChange={(e) =>
-                    handleTimeChange(day, index, "from", e.target.value)
-                  }
-                />
-                <span>-</span>
-                <Input
-                  type="time"
-                  value={range.to}
-                  onChange={(e) =>
-                    handleTimeChange(day, index, "to", e.target.value)
-                  }
-                />
-              </div>
-            ))}
+          {availability[day].enabled && (
+            <div className="flex items-center space-x-2">
+              <Input
+                type="time"
+                value={availability[day].from}
+                onChange={(e) =>
+                  setAvailability((prevAvailability) => ({
+                    ...prevAvailability,
+                    [day]: {
+                      ...prevAvailability[day],
+                      from: e.target.value,
+                    },
+                  }))
+                }
+              />
+              <span>-</span>
+              <Input
+                type="time"
+                value={availability[day].to}
+                onChange={(e) =>
+                  setAvailability((prevAvailability) => ({
+                    ...prevAvailability,
+                    [day]: {
+                      ...prevAvailability[day],
+                      to: e.target.value,
+                    },
+                  }))
+                }
+              />
+            </div>
+          )}
         </div>
       ))}
     </div>

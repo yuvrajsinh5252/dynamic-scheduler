@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const Calendar: React.FC = () => {
+const AdminCalendars = () => {
   const [currentEvents, setCurrentEvents] = useState<EventApi[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [newEventTitle, setNewEventTitle] = useState<string>("");
@@ -107,6 +107,7 @@ const Calendar: React.FC = () => {
                       month: "short",
                       day: "numeric",
                     })}{" "}
+                    {/* Format event start date */}
                   </label>
                 </li>
               ))}
@@ -116,7 +117,7 @@ const Calendar: React.FC = () => {
         <div className="w-9/12 mt-8">
           <FullCalendar
             height={"85vh"}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} // Initialize calendar with required plugins.
             headerToolbar={{
               left: "prev,next today",
               center: "title",
@@ -168,4 +169,4 @@ const Calendar: React.FC = () => {
   );
 };
 
-export default Calendar; // Export the Calendar component for use in other parts of the application.
+export default AdminCalendars; // Export the Calendar component for use in other parts of the application.
