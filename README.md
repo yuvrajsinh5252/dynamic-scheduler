@@ -1,5 +1,9 @@
 # Dynamic Availability and Session Scheduling
 
+## Preivew
+
+https://github.com/user-attachments/assets/493675cf-7980-4daf-b50d-d9df19d49f50
+
 ## Project Overview
 
 This web-based application allows users to dynamically set their availability for specific days or the entire week. The admin can view all users availability and schedule one-on-one or multi-participant sessions based on it. There are also features to manage scheduled sessions, including conflict handling
