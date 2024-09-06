@@ -22,6 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+
 
 import { createEvent, getAllUsers, getEvents } from "@/app/actions";
 import { User } from "@prisma/client";
@@ -31,7 +38,7 @@ import { Label } from "../ui/label";
 import { Trash } from "lucide-react";
 
 export default function AdminCalendars(): ReactNode {
-  const [currentEvents, setCurrentEvents] = useState<EventApi[]>([]);
+  const [currentEvents, setCurrentEvents] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [newEventTitle, setNewEventTitle] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
@@ -41,17 +48,26 @@ export default function AdminCalendars(): ReactNode {
   const [endTime, setEndTime] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchData() {
+    const events = async () => {
       const user = await getAllUsers();
       setAllUsers(user);
-    }
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const events = async () => {
       const data = await getEvents();
+
+      const mappedEvents = data.map((event) => ({
+        id: event.id,
+        title: event.name,
+        start: new Date(event.StartDate),
+        end: new Date(event.EndDate),
+        eventUsers: event.EventUser.map((item) => {
+          const userss = user.find((users) => users.id === item.userId);
+          return {
+            id: userss?.id,
+            name: userss?.name,
+          };
+        }),
+      }));
+
+      setCurrentEvents(mappedEvents);
     }
 
     events();
@@ -93,7 +109,7 @@ export default function AdminCalendars(): ReactNode {
 
       const createEvents = async () => {
         if (startTime && endTime) {
-          // await createEvent(newEventTitle, selectedDate.start, selectedDate.end, startTime, endTime, selectedUserid);
+          await createEvent(newEventTitle, selectedDate.start, selectedDate.end, startTime, endTime, selectedUserid);
         } else {
           alert("Please select start and end time");
         }
@@ -120,7 +136,7 @@ export default function AdminCalendars(): ReactNode {
             )}
 
             {currentEvents.length > 0 &&
-              currentEvents.map((event: EventApi) => (
+              currentEvents.map((event) => (
                 <li
                   className="border border-gray-200 shadow px-4 py-2 rounded-md w-96"
                   key={event.id}
@@ -132,8 +148,29 @@ export default function AdminCalendars(): ReactNode {
                       year: "numeric",
                       month: "short",
                       day: "numeric",
+                    })}{" - "}
+                    {formatDate(event.end!, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
                     })}{" "}
                   </label>
+                  <Accordion type="single" collapsible>
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger>users</AccordionTrigger>
+                      <AccordionContent>
+                        {
+                          event?.eventUsers?.map((user: any) => {
+                            return (
+                              <div key={user.id} className="flex gap-2">
+                                <span>{user.name}</span>
+                              </div>
+                            )
+                          })
+                        }
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </li>
               ))}
           </ul>
@@ -155,12 +192,11 @@ export default function AdminCalendars(): ReactNode {
             dayMaxEvents={true}
             select={handleDateClick}
             eventClick={handleEventClick}
-            eventsSet={(events) => { setCurrentEvents(events) }}
-            initialEvents={
-              () => {
-                return currentEvents;
-              }
-            }
+            events={currentEvents}
+            nowIndicator={true}
+            eventTimeFormat={{ hour12: false }}
+            // eventsSet={(events) => { setCurrentEvents(events) }}
+            initialEvents={() => currentEvents}
           />
         </div>
       </div>
