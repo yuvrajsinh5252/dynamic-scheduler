@@ -3,7 +3,6 @@ import {
   formatDate,
   DateSelectArg,
   EventClickArg,
-  EventApi,
 } from "@fullcalendar/core";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -36,6 +35,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Trash } from "lucide-react";
+import { checkValidity } from "@/lib/validator";
 
 export default function AdminCalendars(): ReactNode {
   const [currentEvents, setCurrentEvents] = useState<any[]>([]);
@@ -46,16 +46,29 @@ export default function AdminCalendars(): ReactNode {
   const [selectedUserid, setSelectedUserid] = useState<string[]>([]);
   const [startTime, setSatrtTime] = useState<string | null>(null);
   const [endTime, setEndTime] = useState<string | null>(null);
+  const [availability, setAvailability] = useState<any[]>([]);
 
   useEffect(() => {
     const events = async () => {
       const user = await getAllUsers();
       setAllUsers(user);
+      setAvailability(
+        user.map((user) => {
+          return {
+            id: user.id,
+            name: user.name,
+            schedule: user.Availability,
+          };
+        })
+      );
+
       const data = await getEvents();
 
       const mappedEvents = data.map((event) => ({
         id: event.id,
         title: event.name,
+        timeStart: event.start,
+        timeEnd: event.end,
         start: new Date(event.StartDate),
         end: new Date(event.EndDate),
         eventUsers: event.EventUser.map((item) => {
@@ -155,9 +168,13 @@ export default function AdminCalendars(): ReactNode {
                       day: "numeric",
                     })}{" "}
                   </label>
+                  <div>
+                    <span className="mr-4">Slot</span>
+                    {event.timeStart} - {event.timeEnd}
+                  </div>
                   <Accordion type="single" collapsible>
                     <AccordionItem value="item-1">
-                      <AccordionTrigger>users</AccordionTrigger>
+                      <AccordionTrigger>Participants</AccordionTrigger>
                       <AccordionContent>
                         {
                           event?.eventUsers?.map((user: any) => {
@@ -195,7 +212,6 @@ export default function AdminCalendars(): ReactNode {
             events={currentEvents}
             nowIndicator={true}
             eventTimeFormat={{ hour12: false }}
-            // eventsSet={(events) => { setCurrentEvents(events) }}
             initialEvents={() => currentEvents}
           />
         </div>
@@ -262,25 +278,33 @@ export default function AdminCalendars(): ReactNode {
                 </SelectItem>
                 {
                   allUsers.map((user, index) => (
-                    <div
-                      key={index}
-                      className="p-2 onhover:bg-gray-200 cursor-pointer flex justify-between items-center"
-                      onClick={() => {
-                        if (!selectedUserid.includes(user.id)) {
-                          setSelectedUserid([...selectedUserid, user.id]);
-                        }
-                      }}
-                    >
-                      <span>{user.name}</span>
-                      <span>
-                        <Trash
-                          size={16}
-                          onClick={() => {
-                            setSelectedUserid(selectedUserid.filter((id) => id !== user.id));
-                          }}
-                        />
-                      </span>
-                    </div>
+                    checkValidity(
+                      selectedDate?.start?.toLocaleDateString() ?? "",
+                      selectedDate?.end?.toLocaleDateString() ?? "",
+                      startTime ?? "",
+                      endTime ?? "",
+                      availability.find((item) => item.id === user.id)?.schedule,
+                    ) ? (
+                      <div
+                        key={index}
+                        className="p-2 onhover:bg-gray-200 cursor-pointer flex justify-between items-center"
+                        onClick={() => {
+                          if (!selectedUserid.includes(user.id)) {
+                            setSelectedUserid([...selectedUserid, user.id]);
+                          }
+                        }}
+                      >
+                        <span>{user.name}</span>
+                        <span>
+                          <Trash
+                            size={16}
+                            onClick={() => {
+                              setSelectedUserid(selectedUserid.filter((id) => id !== user.id));
+                            }}
+                          />
+                        </span>
+                      </div>
+                    ) : null
                   ))
                 }
               </SelectContent>
