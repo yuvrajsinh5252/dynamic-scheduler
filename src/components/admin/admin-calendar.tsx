@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import { createEvent, getAllUsers } from "@/app/actions";
+import { createEvent, getAllUsers, getEvents } from "@/app/actions";
 import { User } from "@prisma/client";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -50,21 +50,12 @@ export default function AdminCalendars(): ReactNode {
   }, []);
 
   useEffect(() => {
-    // Load events from local storage when the component mounts
-    if (typeof window !== "undefined") {
-      const savedEvents = localStorage.getItem("events");
-      if (savedEvents) {
-        setCurrentEvents(JSON.parse(savedEvents));
-      }
+    const events = async () => {
+      const data = await getEvents();
     }
-  }, []);
 
-  useEffect(() => {
-    // Save events to local storage whenever they change
-    if (typeof window !== "undefined") {
-      localStorage.setItem("events", JSON.stringify(currentEvents));
-    }
-  }, [currentEvents]);
+    events();
+  }, []);
 
   const handleDateClick = (selected: DateSelectArg) => {
     setSelectedDate(selected);
@@ -102,8 +93,7 @@ export default function AdminCalendars(): ReactNode {
 
       const createEvents = async () => {
         if (startTime && endTime) {
-          console.log(selectedDate.start);
-          await createEvent(newEventTitle, selectedDate.start, selectedDate.end, startTime, endTime, selectedUserid);
+          // await createEvent(newEventTitle, selectedDate.start, selectedDate.end, startTime, endTime, selectedUserid);
         } else {
           alert("Please select start and end time");
         }
@@ -159,23 +149,22 @@ export default function AdminCalendars(): ReactNode {
               right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
             }}
             initialView="dayGridMonth"
-            // editable={true} // Allow events to be edited.
+            editable={true}
             selectable={true}
             selectMirror={true}
             dayMaxEvents={true}
-            select={handleDateClick} // Handle date selection to create new events.
-            eventClick={handleEventClick} // Handle clicking on events (e.g., to delete them).
-            eventsSet={(events) => setCurrentEvents(events)} // Update state with current events whenever they change.
+            select={handleDateClick}
+            eventClick={handleEventClick}
+            eventsSet={(events) => { setCurrentEvents(events) }}
             initialEvents={
-              typeof window !== "undefined"
-                ? JSON.parse(localStorage.getItem("events") || "[]")
-                : []
-            } // Initial events loaded from local storage.
+              () => {
+                return currentEvents;
+              }
+            }
           />
         </div>
       </div>
 
-      {/* Dialog for adding new events */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>

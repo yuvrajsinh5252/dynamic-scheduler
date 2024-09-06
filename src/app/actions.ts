@@ -41,11 +41,9 @@ export const createUserAvailability = async (
 };
 
 export const DeleteUserAvailability = async (userId: string, name: string) => {
-  return await prisma.availability.delete({
-    where: {
-      id: userId,
-      name,
-    },
+  return await prisma.user.update({
+    where: { id: userId },
+    data: { Availability: { deleteMany: { name } } },
   });
 };
 
@@ -96,5 +94,8 @@ export const getUserEvents = async (userId: string) => {
 };
 
 export const getAllUsers = async () => {
-  return await prisma.user.findMany();
+  return await prisma.user.findMany({
+    include: { Availability: true },
+    where: { role: "USER" },
+  });
 };
