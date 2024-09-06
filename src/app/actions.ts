@@ -19,6 +19,7 @@ export const getUserRole = async (userId: string) => {
 
 export const createUserAvailability = async (
   userId: string,
+  name: string,
   availability: Record<string, DayAvailability>
 ) => {
   const newAvailability = Object.entries(availability).map(
@@ -31,7 +32,7 @@ export const createUserAvailability = async (
   );
 
   const data = {
-    name: "default name",
+    name,
     userId,
     days: newAvailability,
   };
@@ -44,6 +45,33 @@ export const DeleteUserAvailability = async (userId: string, name: string) => {
   return await prisma.user.update({
     where: { id: userId },
     data: { Availability: { deleteMany: { name } } },
+  });
+};
+
+export const updateUserAvailability = async (
+  userId: string,
+  name: string,
+  availability: Record<string, DayAvailability>
+) => {
+  const newAvailability = Object.entries(availability).map(
+    ([day, { enabled, from, to }]) => ({
+      day,
+      enabled,
+      from,
+      to,
+    })
+  );
+
+  return await prisma.user.update({
+    where: { id: userId },
+    data: {
+      Availability: {
+        updateMany: {
+          where: { name },
+          data: { days: newAvailability },
+        },
+      },
+    },
   });
 };
 

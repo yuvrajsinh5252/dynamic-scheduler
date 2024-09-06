@@ -16,7 +16,7 @@ import { getUserEvents } from "@/app/actions";
 
 const UserCalendars = () => {
   const session = useSession();
-  const [events, setEvents] = useState<{ id: string; title: string; start: string; end: string | null; }[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<{
     title: string; start: string; end: string | null
@@ -31,8 +31,8 @@ const UserCalendars = () => {
       const mappedEvents = data.map(event => ({
         id: event.id,
         title: event.name,
-        start: new Date(event.StartDate).toISOString(),
-        end: event.EndDate ? new Date(event.EndDate).toISOString() : null
+        start: event.StartDate,
+        end: event.EndDate,
       }));
 
       setEvents(mappedEvents);
@@ -58,7 +58,6 @@ const UserCalendars = () => {
             events={events as any}
             initialView="dayGridMonth"
             editable={true}
-            selectable={true}
             selectMirror={true}
             dayMaxEvents={true}
             nowIndicator={true}

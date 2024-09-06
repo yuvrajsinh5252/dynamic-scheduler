@@ -19,6 +19,7 @@ export default async function Page() {
           <div
             onClick={async () => {
               await setUserRole(session?.user?.id ?? "", "USER");
+              redirect("/dashboard");
             }}
             className="flex flex-col justify-center items-center">
             <User size={40} />
@@ -27,6 +28,7 @@ export default async function Page() {
           <div
             onClick={async () => {
               await setUserRole(session?.user?.id ?? "", "ADMIN");
+              redirect("/dashboard");
             }}
             className="flex flex-col justify-center items-center">
             <User size={40} />

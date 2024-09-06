@@ -1,14 +1,29 @@
-import { Trash } from "lucide-react";
-import { buttonVariants } from "../ui/button";
-import { DeleteUserAvailability } from "@/app/actions";
-
+import { Edit, Trash } from "lucide-react";
+import { Button, buttonVariants } from "../ui/button";
+import { DeleteUserAvailability, updateUserAvailability } from "@/app/actions";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import AvailabilityPicker from "./availability-picker";
 interface CardProps {
+  availability: Record<string, DayAvailability>;
+  setAvailability: React.Dispatch<React.SetStateAction<Record<string, DayAvailability>>>;
   title: string;
   time: DayAvailability[];
   id: string;
 }
 
 export default function Card({
+  availability,
+  setAvailability,
   title,
   time,
   id
@@ -35,13 +50,52 @@ export default function Card({
           ))
         }
       </div>
-      <button
-        onClick={async () => {
-          await DeleteUserAvailability(id, title);
-        }}
-        className={buttonVariants({ variant: "destructive" })}>
-        <Trash size={25} />
-      </button>
+      <div className="flex gap-4">
+        <button
+          onClick={async () => {
+            await DeleteUserAvailability(id, title);
+            window.location.reload();
+          }}
+          className={"mr-4 " + buttonVariants({ variant: "destructive" })}>
+          <Trash size={25} />
+        </button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex gap-2">
+              <Edit size={20} />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add Interval</DialogTitle>
+              <DialogDescription></DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  defaultValue="Pedro Duarte"
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <AvailabilityPicker availability={availability} setAvailability={setAvailability} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={async () => {
+                await updateUserAvailability(id, title, availability);
+                window.location.reload();
+              }}>
+                Save changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div >
   );
 }

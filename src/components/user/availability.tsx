@@ -23,6 +23,7 @@ import { Availability } from "@prisma/client"
 export default function UserAvailability() {
   const session = useSession();
   const [data, setData] = useState<Availability[]>([]);
+  const [name, setName] = useState<string>("");
 
   const daysOfWeek: string[] = [
     "Sunday", "Monday", "Tuesday", "Wednesday",
@@ -79,6 +80,7 @@ export default function UserAvailability() {
                     id="name"
                     defaultValue="Pedro Duarte"
                     className="col-span-3"
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -87,7 +89,8 @@ export default function UserAvailability() {
               </div>
               <DialogFooter>
                 <Button onClick={async () => {
-                  if (session.data?.user?.id) await createUserAvailability(session.data?.user?.id, availability);
+                  if (session.data?.user?.id) await createUserAvailability(session.data?.user?.id, name, availability);
+                  window.location.reload();
                 }}>
                   Save changes
                 </Button>
@@ -99,7 +102,14 @@ export default function UserAvailability() {
       <div className="flex-col gap-4 rounded-lg p-4 flex">
         {
           data.length > 0 ? data.map((item, index) => (
-            <Card key={index} title={item.name} time={item.days} id={session.data?.user?.id ?? " "} />
+            <Card
+              key={index}
+              availability={availability}
+              setAvailability={setAvailability}
+              title={item.name}
+              time={item.days}
+              id={session.data?.user?.id ?? " "}
+            />
           )) : <div>No data</div>
         }
       </div >
