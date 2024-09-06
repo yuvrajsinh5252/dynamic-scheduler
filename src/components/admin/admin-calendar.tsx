@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import {
   formatDate,
   DateSelectArg,
@@ -15,12 +15,39 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-const AdminCalendars = () => {
+import { createEvent, getAllUsers } from "@/app/actions";
+import { User } from "@prisma/client";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Trash } from "lucide-react";
+
+export default function AdminCalendars(): ReactNode {
   const [currentEvents, setCurrentEvents] = useState<EventApi[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [newEventTitle, setNewEventTitle] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [selectedUserid, setSelectedUserid] = useState<string[]>([]);
+  const [startTime, setSatrtTime] = useState<string | null>(null);
+  const [endTime, setEndTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      const user = await getAllUsers();
+      setAllUsers(user);
+    }
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     // Load events from local storage when the component mounts
@@ -45,7 +72,6 @@ const AdminCalendars = () => {
   };
 
   const handleEventClick = (selected: EventClickArg) => {
-    // Prompt user for confirmation before deleting an event
     if (
       window.confirm(
         `Are you sure you want to delete the event "${selected.event.title}"?`
@@ -63,8 +89,8 @@ const AdminCalendars = () => {
   const handleAddEvent = (e: React.FormEvent) => {
     e.preventDefault();
     if (newEventTitle && selectedDate) {
-      const calendarApi = selectedDate.view.calendar; // Get the calendar API instance.
-      calendarApi.unselect(); // Unselect the date range.
+      const calendarApi = selectedDate.view.calendar;
+      calendarApi.unselect();
 
       const newEvent = {
         id: `${selectedDate.start.toISOString()}-${newEventTitle}`,
@@ -74,10 +100,20 @@ const AdminCalendars = () => {
         allDay: selectedDate.allDay,
       };
 
+      const createEvents = async () => {
+        if (startTime && endTime) {
+          console.log(selectedDate.start);
+          await createEvent(newEventTitle, selectedDate.start, selectedDate.end, startTime, endTime, selectedUserid);
+        } else {
+          alert("Please select start and end time");
+        }
+      }
+      createEvents();
+
       calendarApi.addEvent(newEvent);
       handleCloseDialog();
-    }
-  };
+    };
+  }
 
   return (
     <div className="w-full px-5 rounded-lg border-2 h-full">
@@ -107,7 +143,6 @@ const AdminCalendars = () => {
                       month: "short",
                       day: "numeric",
                     })}{" "}
-                    {/* Format event start date */}
                   </label>
                 </li>
               ))}
@@ -117,17 +152,17 @@ const AdminCalendars = () => {
         <div className="w-9/12 mt-8">
           <FullCalendar
             height={"85vh"}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} // Initialize calendar with required plugins.
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             headerToolbar={{
               left: "prev,next today",
               center: "title",
               right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-            }} // Set header toolbar options.
-            initialView="dayGridMonth" // Initial view mode of the calendar.
-            editable={true} // Allow events to be edited.
-            selectable={true} // Allow dates to be selectable.
-            selectMirror={true} // Mirror selections visually.
-            dayMaxEvents={true} // Limit the number of events displayed per day.
+            }}
+            initialView="dayGridMonth"
+            // editable={true} // Allow events to be edited.
+            selectable={true}
+            selectMirror={true}
+            dayMaxEvents={true}
             select={handleDateClick} // Handle date selection to create new events.
             eventClick={handleEventClick} // Handle clicking on events (e.g., to delete them).
             eventsSet={(events) => setCurrentEvents(events)} // Update state with current events whenever they change.
@@ -146,27 +181,94 @@ const AdminCalendars = () => {
           <DialogHeader>
             <DialogTitle>Add New Event Details</DialogTitle>
           </DialogHeader>
-          <form className="space-x-5 mb-4" onSubmit={handleAddEvent}>
-            <input
+          <form className="space-x-5 mb-4 flex flex-col gap-10" onSubmit={handleAddEvent}>
+            <Input
               type="text"
               placeholder="Event Title"
               value={newEventTitle}
-              onChange={(e) => setNewEventTitle(e.target.value)} // Update new event title as the user types.
+              onChange={(e) => setNewEventTitle(e.target.value)}
               required
-              className="border border-gray-200 p-3 rounded-md text-lg"
             />
-            <button
-              className="p-3 mt-5 rounded-md"
+            <div className="flex gap-10">
+              <Label>
+                Start Date: {selectedDate?.start?.toLocaleDateString()}
+              </Label>
+              <Label>
+                End Date: {selectedDate?.end?.toLocaleDateString()}
+              </Label>
+            </div>
+            <div>
+              <Label>
+                Start Time:
+              </Label>
+              <Input
+                type="time"
+                onChange={(e) => setSatrtTime(e.target.value)}
+                value={startTime ?? " "}
+              />
+            </div>
+            <div>
+              <Label>
+                End Time:
+              </Label>
+              <Input
+                type="time"
+                onChange={(e) => setEndTime(e.target.value)}
+                value={endTime ?? " "}
+              />
+            </div>
+            <Select>
+              <SelectTrigger className="w-96">
+                <SelectValue placeholder="selectUsers" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="asd" className="flex gap-2">
+                  {
+                    selectedUserid.map((id, index) => (
+                      <div
+                        key={index}
+                        className="p-2 flex gap-3"
+                      >
+                        <span>{index + 1}</span>
+                        {allUsers.find((user) => user.id === id)?.name}
+                      </div>
+                    ))
+                  }
+                </SelectItem>
+                {
+                  allUsers.map((user, index) => (
+                    <div
+                      key={index}
+                      className="p-2 onhover:bg-gray-200 cursor-pointer flex justify-between items-center"
+                      onClick={() => {
+                        if (!selectedUserid.includes(user.id)) {
+                          setSelectedUserid([...selectedUserid, user.id]);
+                        }
+                      }}
+                    >
+                      <span>{user.name}</span>
+                      <span>
+                        <Trash
+                          size={16}
+                          onClick={() => {
+                            setSelectedUserid(selectedUserid.filter((id) => id !== user.id));
+                          }}
+                        />
+                      </span>
+                    </div>
+                  ))
+                }
+              </SelectContent>
+            </Select>
+
+            <Button
               type="submit"
             >
-              Add
-            </button>{" "}
-            {/* Button to submit new event */}
+              Add Event
+            </Button>{" "}
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 };
-
-export default AdminCalendars; // Export the Calendar component for use in other parts of the application.

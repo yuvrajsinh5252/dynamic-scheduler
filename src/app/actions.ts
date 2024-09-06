@@ -60,19 +60,25 @@ export const getUserAvailability = async (userId: string) => {
 
 export const createEvent = async (
   name: string,
-  start: Date,
-  end: Date,
+  StartDate: Date,
+  EndDate: Date,
+  start: string,
+  end: string,
   userIds: string[]
 ) => {
-  return await prisma.event.create({
-    data: {
-      name,
-      start,
-      end,
-      EventUser: {
-        create: userIds.map((userId) => ({ userId })),
-      },
+  const data = {
+    name,
+    StartDate,
+    EndDate,
+    start,
+    end,
+    EventUser: {
+      create: userIds.map((userId) => ({ userId })),
     },
+  };
+
+  return await prisma.event.create({
+    data,
   });
 };
 

@@ -32,8 +32,10 @@ model User {
 model Event {
   id        String      @id @default(auto()) @map("_id") @db.ObjectId
   name      String
-  start     DateTime
-  end       DateTime
+  StartDate DateTime
+  EndDate   DateTime
+  start     String
+  end       String
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   EventUser EventUser[]
