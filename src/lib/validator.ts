@@ -8,6 +8,10 @@ const daysMap: { [key: string]: number } = {
   Saturday: 6,
 };
 
+function convertToNumber(time: string) {
+  return parseInt(time.split(":")[0]) * 60 + parseInt(time.split(":")[1]);
+}
+
 function checkDayOverlap(
   admin_start: number,
   admin_end: number,
@@ -18,12 +22,16 @@ function checkDayOverlap(
 }
 
 function checkTimeOverlap(
-  admin_start: any,
-  admin_end: any,
-  user_start: any,
-  user_end: any
+  admin_start: number,
+  admin_end: number,
+  user_start: number,
+  user_end: number
 ) {
-  if (admin_start <= user_start && admin_end >= user_end) return true;
+  if (
+    (admin_start < user_start && admin_end > user_start) ||
+    (admin_start < user_end && admin_end > user_end)
+  )
+    return true;
   else return false;
 }
 
@@ -41,11 +49,10 @@ export function checkValidity(
     admin_end_time != "" &&
     user_schdule
   ) {
-    const adminStartDateObj = new Date(admin_start_date);
-    const adminEndDateObj = new Date(admin_end_date);
+    const adminStartDay = parseInt(admin_start_date.split("/")[0]);
+    const adminEndDay = parseInt(admin_end_date.split("/")[0]) - 1;
 
-    const adminStartDay = adminStartDateObj.getDay();
-    const adminEndDay = adminEndDateObj.getDay();
+    let done = false;
 
     user_schdule.forEach((element: any) => {
       element.days.forEach((day: any) => {
@@ -54,14 +61,19 @@ export function checkValidity(
 
           if (
             checkDayOverlap(adminStartDay, adminEndDay, userDay) ||
-            checkTimeOverlap(admin_start_time, admin_end_time, day.from, day.to)
+            checkTimeOverlap(
+              convertToNumber(admin_start_time),
+              convertToNumber(admin_end_time),
+              convertToNumber(day.from),
+              convertToNumber(day.to)
+            )
           ) {
-            return false;
+            done = true;
           }
         }
       });
     });
 
-    return true;
+    return !done;
   }
 }

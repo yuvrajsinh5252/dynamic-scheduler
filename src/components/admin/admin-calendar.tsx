@@ -261,7 +261,7 @@ export default function AdminCalendars(): ReactNode {
               </Label>
               <Input
                 type="time"
-                onChange={(e) => setSatrtTime(e.target.value)}
+                onChange={(e) => { setSatrtTime(e.target.value) }}
                 value={startTime ?? " "}
               />
             </div>
