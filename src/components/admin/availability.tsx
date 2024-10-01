@@ -52,11 +52,11 @@ export default function AdminAvailability() {
                       <DialogTitle>User availability details</DialogTitle>
                       <DialogDescription></DialogDescription>
                     </DialogHeader>
-                    <div className="flex flex-col border-2 p-4 gap-10 rounded-lg overflow-scroll max-h-[400px]">
+                    <div className="flex border-2 p-4 gap-10 rounded-lg overflow-scroll max-h-[400px]">
                       {
                         availability.map((items) => {
                           return (
-                            <div className="flex gap-2 items-center p-2">
+                            <div className="flex flex-col gap-2 items-center p-2">
                               <div className="min-w-32">{items.name}</div>
                               {
                                 items.days.map((day) => {

@@ -158,7 +158,7 @@ export default function AdminCalendars(): ReactNode {
           <div className="py-10 text-2xl font-extrabold">
             Calendar Events
           </div>
-          <ul className="space-y-4">
+          <ul className="space-y-4 p-2 max-h-[68vh] overflow-scroll">
             {currentEvents.length <= 0 && (
               <div className="italic text-center">
                 No Events Present
