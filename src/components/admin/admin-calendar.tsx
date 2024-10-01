@@ -108,28 +108,45 @@ export default function AdminCalendars(): ReactNode {
 
   const handleAddEvent = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newEventTitle && selectedDate) {
+    if (newEventTitle && selectedDate && startTime && endTime) {
       const calendarApi = selectedDate.view.calendar;
       calendarApi.unselect();
 
-      const newEvent = {
-        id: `${selectedDate.start.toISOString()}-${newEventTitle}`,
-        title: newEventTitle,
-        start: selectedDate.start,
-        end: selectedDate.end,
-        allDay: selectedDate.allDay,
-      };
-
-      const createEvents = async () => {
+      const createEvents = async (startDate: any, endDate: any) => {
         if (startTime && endTime) {
-          await createEvent(newEventTitle, selectedDate.start, selectedDate.end, startTime, endTime, selectedUserid);
+          await createEvent(newEventTitle, startDate, endDate, startTime, endTime, selectedUserid);
         } else {
           alert("Please select start and end time");
         }
       }
-      createEvents();
 
-      calendarApi.addEvent(newEvent);
+      let [newHours, newMinutes] = startTime.split(':').map(Number);
+      let [endHours, endMinutes] = endTime.split(':').map(Number);
+
+      const startDate = new Date(selectedDate.start);
+      const endDate = new Date(selectedDate.end);
+
+      // const events = [];
+
+      for (let d = new Date(startDate); d < endDate; d.setDate(d.getDate() + 1)) {
+        let eventStart = new Date(d);
+        eventStart.setHours(newHours, newMinutes, 0, 0);
+
+        let eventEnd = new Date(d);
+        eventEnd.setHours(endHours, endMinutes, 0, 0);
+
+        // events.push({
+        //   id: `${d.toISOString()}-${newEventTitle}`,
+        //   title: newEventTitle,
+        //   start: eventStart,
+        //   end: eventEnd,
+        //   allDay: false,
+        // });
+
+        createEvents(eventStart, eventEnd);
+      }
+
+      calendarApi.refetchEvents();
       handleCloseDialog();
     };
   }
@@ -149,10 +166,10 @@ export default function AdminCalendars(): ReactNode {
             )}
 
             {currentEvents.length > 0 &&
-              currentEvents.map((event) => (
+              currentEvents.map((event, index) => (
                 <li
                   className="border border-gray-200 shadow px-4 py-2 rounded-md w-96"
-                  key={event.id}
+                  key={index}
                 >
                   {event.title}
                   <br />

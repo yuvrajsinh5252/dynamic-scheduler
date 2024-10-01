@@ -69,7 +69,6 @@ const UserCalendars = () => {
                 end: info.event.end ? info.event.end.toISOString() : null
               });
               setIsDialogOpen(true);
-              console.log(info);
             }}
           />
         </div>

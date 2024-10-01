@@ -47,8 +47,6 @@ export function checkValidity(
     const adminStartDay = adminStartDateObj.getDay();
     const adminEndDay = adminEndDateObj.getDay();
 
-    console.log(user_schdule);
-
     user_schdule.forEach((element: any) => {
       element.days.forEach((day: any) => {
         if (day.enabled) {
